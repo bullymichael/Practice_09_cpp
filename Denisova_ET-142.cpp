@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <fstream> 
 using namespace std;
 
 enum TrainType 
@@ -230,6 +231,46 @@ void edit(Route routes[], int size, const char* name) //редактирован
 }
 
 
+void update_wagons(Route routes[], int size)
+{
+    ifstream fin;
+    char name[50];
+    int new_wagons;
+
+    fin.open("C:/Users/admin/OneDrive/Рабочий стол/practice_10.txt");
+
+    if (fin.is_open()) 
+    {
+        while (!fin.eof()) 
+        {
+            fin >> name >> new_wagons;
+            if (fin.fail()) break;
+
+            for (int i = 0; i < size; i++) {
+                if (strcmp(routes[i].name, name) == 0) 
+                {
+                    routes[i].wagons = new_wagons;
+                }
+            }
+        }
+    }
+    fin.close();
+}
+
+void save_to_binary(const char* filename, const Route* routes, int count)
+{
+    ofstream out(filename, ios::binary);
+    out.write((char*)routes, count * sizeof(Route));
+    out.close();
+}
+
+void load_from_binary(const char* filename, Route* routes, int count) 
+{
+    ifstream in(filename, ios::binary);
+    in.read((char*)routes, count * sizeof(Route));
+    in.close();
+}
+    
 int main()
 {
     setlocale(LC_ALL, "");
@@ -260,6 +301,16 @@ int main()
     };
 
     display_filtered(all_routes, 20);
+
+    update_wagons(all_routes, 20);
+
+    save_to_binary("C:/Users/admin/OneDrive/Рабочий стол/routes.bin", all_routes, 20);
+
+    Route loaded[20] = {};
+    load_from_binary("C:/Users/admin/OneDrive/Рабочий стол/routes.bin", loaded, 20);
+
+    cout << "\nПервый маршрут после загрузки из бинарного файла:\n";
+    print_route(loaded[0]);
 
     cout << "Конкретный маршрут: " << '\n';
     name_route(all_routes, 20, "Экспресс-1");
